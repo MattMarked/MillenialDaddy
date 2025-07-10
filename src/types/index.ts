@@ -16,6 +16,10 @@ export interface QueueItem {
   submittedBy: string;
   timestamp: Date;
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  queueType: 'input' | 'ready_to_publish';
+  content?: ProcessedContent | null;
+  processedAt?: Date | null;
+  publishedAt?: Date | null;
 }
 
 export interface ProcessedContent {
@@ -67,4 +71,50 @@ export interface InstagramPost {
   hashtags: string[];
   storyContent: string;
   postContent: string;
+}
+
+// Queue-related enums and types
+export type QueueStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type QueueType = 'input' | 'ready_to_publish';
+export type Platform = 'instagram' | 'youtube' | 'tiktok';
+
+// Queue operation interfaces
+export interface QueueOperationResult {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export interface QueueStats {
+  input: number;
+  ready_to_publish: number;
+  failed: number;
+  processing: number;
+  total: number;
+}
+
+export interface QueueItemFactory {
+  createQueueItem(data: {
+    url: string;
+    platform: Platform;
+    submittedBy: string;
+    queueType?: QueueType;
+    status?: QueueStatus;
+  }): QueueItem;
+}
+
+// Redis queue interfaces
+export interface RedisQueueConfig {
+  url: string;
+  maxRetries: number;
+  retryDelay: number;
+  defaultTTL: number;
+}
+
+export interface QueueMessage {
+  id: string;
+  type: 'process' | 'publish' | 'retry';
+  data: QueueItem;
+  timestamp: Date;
+  retryCount: number;
 }
