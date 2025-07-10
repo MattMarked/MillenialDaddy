@@ -1,0 +1,48 @@
+{
+  "name": "video-link-queue",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed"
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.5.1",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "redis": "^4.6.10",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^13.4.0",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20",
+    "@types/node-fetch": "^2.6.12",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "node-fetch": "^3.3.2",
+    "prettier": "^3.1.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5"
+  }
+}
