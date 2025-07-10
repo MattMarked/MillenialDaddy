@@ -20,6 +20,8 @@ export interface QueueItem {
   content?: ProcessedContent | null;
   processedAt?: Date | null;
   publishedAt?: Date | null;
+  retryCount?: number;
+  error?: string;
 }
 
 export interface ProcessedContent {

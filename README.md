@@ -1,4 +1,4 @@
-# Video Link Queue Service
+# Millenial Daddy - Video Link Queue Service
 
 An automated content curation and publishing system that allows administrators to submit social media video links (Instagram Reels, YouTube videos, TikTok videos) to a processing queue. The service automatically processes these links to generate enriched content with descriptions, tags, and citations, then publishes them to Instagram on a configurable schedule.
 
@@ -15,7 +15,7 @@ An automated content curation and publishing system that allows administrators t
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Redis server
 - PostgreSQL database
 - API keys for Instagram, YouTube, TikTok, and OpenAI
@@ -24,11 +24,13 @@ An automated content curation and publishing system that allows administrators t
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Copy environment variables:
+
    ```bash
    cp .env.local.example .env.local
    ```

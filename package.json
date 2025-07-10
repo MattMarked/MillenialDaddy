@@ -24,7 +24,10 @@
     "react": "^18",
     "react-dom": "^18",
     "redis": "^4.6.10",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "openai": "^4.20.1",
+    "googleapis": "^128.0.0",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.4",
