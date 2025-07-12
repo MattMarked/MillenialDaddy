@@ -183,7 +183,7 @@ Create content that would work well for Instagram posts and stories. Focus on wh
         const cleanTag = tag.replace(/^#/, '').replace(/[^a-zA-Z0-9_]/g, '');
         return cleanTag ? `#${cleanTag}` : null;
       })
-      .filter(Boolean)
+      .filter((tag): tag is string => Boolean(tag))
       .filter(tag => /^#[a-zA-Z0-9_]+$/.test(tag))
       .slice(0, this.config.maxHashtags);
 

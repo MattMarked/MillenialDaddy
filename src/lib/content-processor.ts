@@ -2,7 +2,7 @@
 import { QueueItem, ProcessedContent, QueueOperationResult } from '@/types';
 import { ContentExtractorFactory, VideoMetadata } from './content-extractors';
 import { AIContentAnalyzer } from './ai-content-analyzer';
-import { RedisQueue } from './redis-queue';
+import { RedisQueueManager } from './redis-queue';
 
 export interface ProcessingResult {
   success: boolean;
@@ -20,11 +20,11 @@ export interface ProcessingConfig {
 
 export class ContentProcessor {
   private aiAnalyzer: AIContentAnalyzer;
-  private redisQueue: RedisQueue;
+  private redisQueue: RedisQueueManager;
   private config: ProcessingConfig;
 
   constructor(
-    redisQueue: RedisQueue,
+    redisQueue: RedisQueueManager,
     config?: Partial<ProcessingConfig>
   ) {
     this.redisQueue = redisQueue;
@@ -66,7 +66,7 @@ export class ContentProcessor {
       
       const isRetryable = this.isRetryableError(error);
       
-      if (isRetryable && item.retryCount < this.config.maxRetries) {
+      if (isRetryable && (item.retryCount || 0) < this.config.maxRetries) {
         await this.scheduleRetry(item);
         return {
           success: false,
@@ -153,13 +153,13 @@ export class ContentProcessor {
       item.queueType = 'ready_to_publish';
       
       // Add to ready-to-publish queue
-      await this.redisQueue.addToQueue('ready_to_publish', {
+      await this.redisQueue.addToReadyToPublishQueue({
         ...item,
         content: processedContent,
       });
       
-      // Remove from input queue
-      await this.redisQueue.removeFromQueue('input', item.id);
+      // Move from input queue (this will handle removal)
+      await this.redisQueue.moveItemBetweenQueues(item.id, 'input', 'ready_to_publish');
       
       console.log(`Moved item ${item.id} to ready-to-publish queue`);
     } catch (error) {
@@ -175,9 +175,9 @@ export class ContentProcessor {
       
       // Add back to input queue with delay
       setTimeout(async () => {
-        await this.redisQueue.addToQueue('input', item);
+        await this.redisQueue.addToInputQueue(item);
         console.log(`Scheduled retry ${item.retryCount} for item ${item.id}`);
-      }, this.config.retryDelay * item.retryCount);
+      }, this.config.retryDelay * (item.retryCount || 1));
       
     } catch (error) {
       console.error(`Failed to schedule retry:`, error);
@@ -190,8 +190,8 @@ export class ContentProcessor {
       item.status = 'failed';
       item.error = error instanceof Error ? error.message : 'Unknown error';
       
-      await this.redisQueue.addToQueue('failed', item);
-      await this.redisQueue.removeFromQueue('input', item.id);
+      await this.redisQueue.markItemFailed(item.id, item.error);
+      await this.redisQueue.moveItemBetweenQueues(item.id, 'input', 'failed');
       
       console.log(`Moved item ${item.id} to failed queue: ${item.error}`);
     } catch (err) {

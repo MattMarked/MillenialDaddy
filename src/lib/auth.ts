@@ -60,6 +60,19 @@ export async function validateAdminAuth(request: NextRequest): Promise<{ email: 
 }
 
 /**
+ * Simple admin validation by email
+ */
+export async function validateAdmin(email: string): Promise<boolean> {
+  try {
+    const admin = await AdminRepository.findByEmail(email);
+    return admin !== null && admin.is_active;
+  } catch (error) {
+    console.error('Error validating admin:', error);
+    return false;
+  }
+}
+
+/**
  * Middleware wrapper for admin authentication
  */
 export function withAdminAuth<T extends any[]>(

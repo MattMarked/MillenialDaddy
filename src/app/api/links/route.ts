@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QueueItemRepository, DatabaseError } from '@/lib/database';
 import { linkSubmissionSchema, parseVideoUrl, validateVideoUrl } from '@/utils/validation';
 import { validateAdminAuth, AuthenticationError, AuthorizationError } from '@/lib/auth';
+import { logger } from '@/lib/logger';
+import { startTimer } from '@/lib/performance-monitor';
 import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
+  const timer = startTimer('api.links.POST');
+  const startTime = Date.now();
+  
   try {
     // Validate admin authentication
     const auth = await validateAdminAuth(request);
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
       content: null,
     });
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Video link submitted successfully',
       queueId: queueItem.id,
@@ -79,9 +84,24 @@ export async function POST(request: NextRequest) {
         username: parsedUrl.username,
       },
     });
+
+    await timer.end({ success: true, platform: parsedUrl.platform });
+    await logger.logApiOperation('POST', '/api/links', 200, Date.now() - startTime, {
+      adminEmail: auth.email,
+      platform: parsedUrl.platform,
+      queueItemId: queueItem.id
+    });
+
+    return response;
     
   } catch (error) {
+    await timer.end({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    
     if (error instanceof AuthenticationError) {
+      await logger.logApiOperation('POST', '/api/links', 401, Date.now() - startTime, {
+        error: error.message,
+        errorType: 'AuthenticationError'
+      });
       return NextResponse.json(
         {
           success: false,
@@ -92,6 +112,10 @@ export async function POST(request: NextRequest) {
     }
     
     if (error instanceof AuthorizationError) {
+      await logger.logApiOperation('POST', '/api/links', 403, Date.now() - startTime, {
+        error: error.message,
+        errorType: 'AuthorizationError'
+      });
       return NextResponse.json(
         {
           success: false,
@@ -102,6 +126,11 @@ export async function POST(request: NextRequest) {
     }
     
     if (error instanceof z.ZodError) {
+      await logger.logApiOperation('POST', '/api/links', 400, Date.now() - startTime, {
+        error: 'Validation error',
+        errorType: 'ZodError',
+        validationErrors: error.errors
+      });
       return NextResponse.json(
         {
           success: false,
@@ -113,7 +142,11 @@ export async function POST(request: NextRequest) {
     }
     
     if (error instanceof DatabaseError) {
-      console.error('Database error submitting link:', error);
+      await logger.logError(error, 'Database error submitting link', {}, 'links-api');
+      await logger.logApiOperation('POST', '/api/links', 500, Date.now() - startTime, {
+        error: 'Database error',
+        errorType: 'DatabaseError'
+      });
       return NextResponse.json(
         {
           success: false,
@@ -123,7 +156,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.error('Unexpected error submitting link:', error);
+    await logger.logError(
+      error instanceof Error ? error : new Error('Unknown error'),
+      'Unexpected error submitting link',
+      {},
+      'links-api'
+    );
+    await logger.logApiOperation('POST', '/api/links', 500, Date.now() - startTime, {
+      error: 'Internal server error',
+      errorType: 'UnknownError'
+    });
     return NextResponse.json(
       {
         success: false,

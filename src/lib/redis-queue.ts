@@ -8,6 +8,8 @@ import {
   RedisQueueConfig 
 } from '@/types';
 import { QueueOperations, QueueStatsCalculator } from './queue';
+import { logger } from './logger';
+import { startTimer } from './performance-monitor';
 
 export class RedisQueueError extends Error {
   constructor(message: string, public cause?: Error) {
@@ -108,6 +110,8 @@ export class RedisQueueManager {
 
   // Queue operations
   async addToInputQueue(item: QueueItem): Promise<QueueOperationResult> {
+    const timer = startTimer('redis.addToInputQueue', { platform: item.platform });
+    
     try {
       await this.connect();
       
@@ -126,11 +130,28 @@ export class RedisQueueManager {
       // Add to input queue
       await this.client.lPush(this.QUEUES.INPUT, JSON.stringify(message));
 
+      const queuePosition = await this.getQueueLength('input');
+      
+      await timer.end({ success: true, queuePosition });
+      await logger.logQueueOperation('add-to-input', 'input', item.id, {
+        platform: item.platform,
+        queuePosition,
+        url: item.url
+      });
+
       return QueueOperations.createSuccessResult(
         'Item added to input queue successfully',
-        { itemId: item.id, queuePosition: await this.getQueueLength('input') }
+        { itemId: item.id, queuePosition }
       );
     } catch (error) {
+      await timer.end({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      await logger.logError(
+        error instanceof Error ? error : new Error('Unknown error'),
+        'Failed to add item to input queue',
+        { itemId: item.id, platform: item.platform },
+        'redis-queue'
+      );
+      
       return QueueOperations.createErrorResult(
         'Failed to add item to input queue',
         { error: error instanceof Error ? error.message : 'Unknown error' }
@@ -456,3 +477,9 @@ export class RedisQueueManager {
 
 // Export singleton instance
 export const redisQueueManager = new RedisQueueManager();
+
+// Export function to get Redis client for monitoring
+export async function getRedisClient(): Promise<RedisClientType> {
+  await redisQueueManager.connect();
+  return (redisQueueManager as any).client;
+}

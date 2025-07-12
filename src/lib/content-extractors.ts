@@ -281,10 +281,10 @@ export class TikTokExtractor extends BaseExtractor {
 
 // Content extractor factory
 export class ContentExtractorFactory {
-  private static extractors: Map<Platform, ContentExtractor> = new Map([
-    ['instagram', new InstagramExtractor()],
-    ['youtube', new YouTubeExtractor()],
-    ['tiktok', new TikTokExtractor()],
+  private static extractors: Map<Platform, ContentExtractor> = new Map<Platform, ContentExtractor>([
+    ['instagram' as Platform, new InstagramExtractor()],
+    ['youtube' as Platform, new YouTubeExtractor()],
+    ['tiktok' as Platform, new TikTokExtractor()],
   ]);
 
   static getExtractor(platform: Platform): ContentExtractor {
@@ -311,8 +311,11 @@ export class ContentExtractorFactory {
   }
 
   static detectPlatform(url: string): Platform | null {
-    for (const [platform, extractor] of this.extractors) {
-      if (extractor.validateUrl(url)) {
+    const platforms: Platform[] = ['instagram', 'youtube', 'tiktok'];
+    
+    for (const platform of platforms) {
+      const extractor = this.extractors.get(platform);
+      if (extractor && extractor.validateUrl(url)) {
         return platform;
       }
     }

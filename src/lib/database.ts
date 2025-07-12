@@ -1,4 +1,12 @@
 import { sql } from '@vercel/postgres';
+
+// Export a database object for compatibility
+export const database = {
+  query: async (text: string, params: any[] = []) => {
+    const result = await sql.query(text, params);
+    return result;
+  }
+};
 import { z } from 'zod';
 
 // Database connection and error handling
