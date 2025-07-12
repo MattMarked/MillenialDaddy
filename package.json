@@ -16,7 +16,12 @@
     "type-check": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:prod": "./scripts/deploy.sh production",
+    "setup:vercel": "./scripts/setup-vercel-env.sh",
+    "pre-deploy": "npm run type-check && npm run lint && npm run format:check && npm run test",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@vercel/postgres": "^0.5.1",

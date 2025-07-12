@@ -73,15 +73,68 @@ src/
 
 ## Deployment
 
-### Vercel (Recommended)
+### Quick Start Deployment
 
-1. Connect your repository to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+1. **Set up environment variables**:
 
-### AWS Alternative
+   ```bash
+   npm run setup:vercel
+   ```
 
-See deployment documentation for AWS Lambda setup instructions.
+2. **Deploy to Vercel**:
+
+   ```bash
+   npm run deploy:prod
+   ```
+
+3. **Verify deployment**:
+   ```bash
+   ./scripts/verify-deployment.sh https://your-app.vercel.app
+   ```
+
+### Detailed Deployment Guide
+
+See [docs/deployment.md](docs/deployment.md) for comprehensive deployment instructions including:
+
+- Vercel configuration and setup
+- Environment variable management
+- Database and Redis setup
+- CI/CD pipeline configuration
+- Monitoring and troubleshooting
+
+### Deployment Scripts
+
+- `npm run deploy` - Deploy preview to Vercel
+- `npm run deploy:prod` - Deploy to production
+- `npm run setup:vercel` - Interactive environment setup
+- `npm run pre-deploy` - Run all pre-deployment checks
+
+### Environment Requirements
+
+#### Database
+
+- PostgreSQL database (Vercel Postgres recommended)
+- Redis instance (Upstash Redis recommended)
+
+#### API Keys
+
+- Instagram Graph API access token
+- YouTube Data API v3 key
+- TikTok API credentials
+- OpenAI API key
+
+#### Hosting
+
+- **Vercel** (recommended): Optimized for free tier
+- **AWS**: Lambda + RDS/DynamoDB alternative
+
+### Monitoring
+
+After deployment, monitor your application:
+
+- Health check: `https://your-app.vercel.app/api/health`
+- Metrics: `https://your-app.vercel.app/api/monitoring/metrics`
+- Admin dashboard: `https://your-app.vercel.app/`
 
 ## Contributing
 
