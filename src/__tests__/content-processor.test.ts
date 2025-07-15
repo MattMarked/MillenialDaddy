@@ -5,7 +5,7 @@ import {
   ExtractionError,
   AIProcessingError,
 } from '@/lib/content-processor';
-import { RedisQueue } from '@/lib/redis-queue';
+import { RedisQueueManager } from '@/lib/redis-queue';
 import { QueueItem, Platform } from '@/types';
 
 // Mock dependencies
@@ -18,7 +18,7 @@ const mockRedisQueue = {
   removeFromQueue: jest.fn(),
   getQueueItems: jest.fn(),
   moveItem: jest.fn(),
-} as jest.Mocked<RedisQueue>;
+} as jest.Mocked<RedisQueueManager>;
 
 const mockVideoMetadata = {
   title: 'Test Video',
@@ -167,7 +167,7 @@ describe('ContentProcessor', () => {
         removeFromQueue: jest.fn(),
         getQueueItems: jest.fn().mockResolvedValue(items),
         moveItem: jest.fn(),
-      } as jest.Mocked<RedisQueue>;
+      } as jest.Mocked<RedisQueueManager>;
 
       // Create a new processor instance with the fresh mock
       const testProcessor = new ContentProcessor(testMockRedisQueue);

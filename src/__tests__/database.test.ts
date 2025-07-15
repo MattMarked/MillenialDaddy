@@ -161,6 +161,9 @@ describe('Database Utilities', () => {
           url: 'https://www.youtube.com/watch?v=test',
           platform: 'youtube',
           submitted_by: 'test@example.com',
+          status: 'pending',
+          queue_type: 'input',
+          content: null,
         });
         
         expect(result).toEqual(mockQueueItem);

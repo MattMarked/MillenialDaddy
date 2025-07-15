@@ -11,6 +11,15 @@ jest.mock('@/lib/database', () => ({
 
 const mockDatabase = database as jest.Mocked<typeof database>;
 
+// Helper function to create proper QueryResult mock
+const createQueryResult = (rows: any[] = []) => ({
+  rows,
+  command: 'SELECT' as const,
+  rowCount: rows.length,
+  oid: 0,
+  fields: []
+});
+
 describe('PublicationConfigManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -25,7 +34,7 @@ describe('PublicationConfigManager', () => {
 
   describe('getConfig', () => {
     it('should return default config when no config exists', async () => {
-      mockDatabase.query.mockResolvedValue({ rows: [] });
+      mockDatabase.query.mockResolvedValue(createQueryResult([]));
 
       const config = await PublicationConfigManager.getConfig();
 
@@ -43,9 +52,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'America/New_York'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: storedConfig }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: storedConfig }]));
 
       const config = await PublicationConfigManager.getConfig();
 

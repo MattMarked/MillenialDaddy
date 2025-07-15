@@ -21,7 +21,7 @@ jest.mock('@/lib/logger', () => ({
   }
 }));
 
-const mockGetDatabase = getDatabase as jest.MockedFunction<typeof getDatabase>;
+const mockDatabase = database as jest.Mocked<typeof database>;
 const mockGetRedisClient = getRedisClient as jest.MockedFunction<typeof getRedisClient>;
 
 describe('Monitoring API Endpoints', () => {
@@ -33,9 +33,7 @@ describe('Monitoring API Endpoints', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetDatabase.mockResolvedValue({
-      execute: mockExecute
-    } as any);
+    mockDatabase.query.mockResolvedValue({ rows: [] } as any);
     mockGetRedisClient.mockResolvedValue(mockRedisClient as any);
   });
 
@@ -220,7 +218,7 @@ describe('Monitoring API Endpoints', () => {
     });
 
     it('should return unhealthy status when services are down', async () => {
-      mockGetDatabase.mockRejectedValue(new Error('Database connection failed'));
+      mockDatabase.query.mockRejectedValue(new Error('Database connection failed'));
       mockRedisClient.ping.mockRejectedValue(new Error('Redis connection failed'));
 
       const request = new Request('http://localhost/api/health');

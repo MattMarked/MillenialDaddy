@@ -26,16 +26,14 @@ jest.mock('@/lib/database', () => ({
 
 const mockLogger = logger as jest.Mocked<typeof logger>;
 const mockAlerting = alerting as jest.Mocked<typeof alerting>;
-const mockGetDatabase = getDatabase as jest.MockedFunction<typeof getDatabase>;
+const mockDatabase = database as jest.Mocked<typeof database>;
 
 describe('ErrorTracker', () => {
   const mockExecute = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetDatabase.mockResolvedValue({
-      execute: mockExecute
-    } as any);
+    mockDatabase.query.mockResolvedValue({ rows: [] } as any);
     mockLogger.logError.mockResolvedValue();
     mockAlerting.alertHighErrorRate.mockResolvedValue();
     mockAlerting.createAlert.mockResolvedValue();
