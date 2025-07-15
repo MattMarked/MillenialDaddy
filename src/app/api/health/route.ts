@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 import { getRedisClient } from '@/lib/redis-queue';
 import { logger } from '@/lib/logger';
 

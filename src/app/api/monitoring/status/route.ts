@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 import { getRedisClient } from '@/lib/redis-queue';
 
 export async function GET(request: NextRequest) {
   try {
-    const db = await getDatabase();
     const redis = await getRedisClient();
 
     // Get queue counts from Redis
-    const inputQueueCount = await redis.llen('input_queue');
-    const readyToPublishQueueCount = await redis.llen('ready_to_publish_queue');
-    const failedQueueCount = await redis.llen('failed_queue');
+    const inputQueueCount = await redis.lLen('input_queue');
+    const readyToPublishQueueCount = await redis.lLen('ready_to_publish_queue');
+    const failedQueueCount = await redis.lLen('failed_queue');
 
     // Get processing statistics from database
-    const [processingStats] = await db.execute(`
+    const processingStats = await database.query(`
       SELECT 
         COUNT(*) as total_items,
         COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
@@ -22,11 +21,11 @@ export async function GET(request: NextRequest) {
         COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
         COUNT(CASE WHEN published_at IS NOT NULL THEN 1 END) as published_count
       FROM queue_items
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+      WHERE created_at >= NOW() - INTERVAL '24 hours'
     `);
 
     // Get recent activity
-    const [recentActivity] = await db.execute(`
+    const recentActivity = await database.query(`
       SELECT 
         id,
         url,
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
         failed: failedQueueCount
       },
       statistics: {
-        last24Hours: processingStats[0] || {
+        last24Hours: processingStats.rows[0] || {
           total_items: 0,
           pending_count: 0,
           processing_count: 0,
@@ -56,7 +55,7 @@ export async function GET(request: NextRequest) {
           published_count: 0
         }
       },
-      recentActivity: recentActivity || [],
+      recentActivity: recentActivity.rows || [],
       timestamp: new Date().toISOString(),
       systemHealth: {
         database: 'healthy',

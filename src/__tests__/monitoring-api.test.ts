@@ -2,12 +2,14 @@ import { GET as getStatus } from '@/app/api/monitoring/status/route';
 import { GET as getLogs } from '@/app/api/monitoring/logs/route';
 import { GET as getMetrics, POST as postMetrics } from '@/app/api/monitoring/metrics/route';
 import { GET as getHealth } from '@/app/api/health/route';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 import { getRedisClient } from '@/lib/redis-queue';
 
 // Mock dependencies
 jest.mock('@/lib/database', () => ({
-  getDatabase: jest.fn()
+  database: {
+    query: jest.fn()
+  }
 }));
 jest.mock('@/lib/redis-queue', () => ({
   getRedisClient: jest.fn()

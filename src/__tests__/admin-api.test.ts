@@ -3,32 +3,42 @@
  */
 
 // Mock Next.js server components before importing
-Object.defineProperty(global, 'Request', {
-  value: class MockRequest {
-    constructor(url: string, init?: any) {
-      this.url = url;
-      this.method = init?.method || 'GET';
-      this.headers = new Map(Object.entries(init?.headers || {}));
-      this._body = init?.body;
-    }
-    async json() {
-      return JSON.parse(this._body);
-    }
-  }
-});
+class MockRequest {
+  url: string;
+  method: string;
+  headers: Map<string, string>;
+  _body: string;
 
-Object.defineProperty(global, 'Response', {
-  value: class MockResponse {
-    constructor(body?: any, init?: any) {
-      this.body = body;
-      this.status = init?.status || 200;
-      this.headers = new Map(Object.entries(init?.headers || {}));
-    }
-    async json() {
-      return JSON.parse(this.body);
-    }
+  constructor(url: string, init?: any) {
+    this.url = url;
+    this.method = init?.method || 'GET';
+    this.headers = new Map(Object.entries(init?.headers || {}));
+    this._body = init?.body;
   }
-});
+  
+  async json() {
+    return JSON.parse(this._body);
+  }
+}
+
+class MockResponse {
+  body: any;
+  status: number;
+  headers: Map<string, string>;
+
+  constructor(body?: any, init?: any) {
+    this.body = body;
+    this.status = init?.status || 200;
+    this.headers = new Map(Object.entries(init?.headers || {}));
+  }
+  
+  async json() {
+    return JSON.parse(this.body);
+  }
+}
+
+Object.defineProperty(global, 'Request', { value: MockRequest });
+Object.defineProperty(global, 'Response', { value: MockResponse });
 
 import { NextRequest } from 'next/server';
 import { POST as addAdmin } from '../app/api/admin/add/route';
@@ -46,6 +56,8 @@ jest.mock('../lib/database', () => ({
     delete: jest.fn(),
   },
   DatabaseError: class DatabaseError extends Error {
+    cause?: Error;
+    
     constructor(message: string, cause?: Error) {
       super(message);
       this.name = 'DatabaseError';

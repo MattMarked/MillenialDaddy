@@ -1,20 +1,21 @@
 import { logger, LogLevel } from '@/lib/logger';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 
 // Mock the database
 jest.mock('@/lib/database', () => ({
-  getDatabase: jest.fn()
+  database: {
+    query: jest.fn()
+  }
 }));
-const mockGetDatabase = getDatabase as jest.MockedFunction<typeof getDatabase>;
+const mockDatabase = database as jest.Mocked<typeof database>;
 
 describe('Logger', () => {
   const mockExecute = jest.fn();
   
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetDatabase.mockResolvedValue({
-      execute: mockExecute
-    } as any);
+    // Mock database query method
+    mockDatabase.query.mockResolvedValue({ rows: [] } as any);
     
     // Mock console methods
     jest.spyOn(console, 'info').mockImplementation();

@@ -1,7 +1,7 @@
 import { errorTracker, ErrorPattern, ErrorAnalysis } from '@/lib/error-tracker';
 import { logger } from '@/lib/logger';
 import { alerting } from '@/lib/alerting';
-import { getDatabase } from '@/lib/database';
+import { database } from '@/lib/database';
 
 // Mock dependencies
 jest.mock('@/lib/logger', () => ({
@@ -19,7 +19,9 @@ jest.mock('@/lib/alerting', () => ({
   }
 }));
 jest.mock('@/lib/database', () => ({
-  getDatabase: jest.fn()
+  database: {
+    query: jest.fn()
+  }
 }));
 
 const mockLogger = logger as jest.Mocked<typeof logger>;

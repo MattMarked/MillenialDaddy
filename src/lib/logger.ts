@@ -1,4 +1,4 @@
-import { getDatabase } from './database';
+import { database } from './database';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -18,10 +18,9 @@ export interface LogEntry {
 class Logger {
   private async persistLog(entry: LogEntry): Promise<void> {
     try {
-      const db = await getDatabase();
-      await db.execute(`
+      await database.query(`
         INSERT INTO system_logs (level, message, context, source, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5)
       `, [
         entry.level,
         entry.message,
@@ -122,10 +121,9 @@ class Logger {
 
     // Also persist to performance metrics table
     try {
-      const db = await getDatabase();
-      await db.execute(`
+      await database.query(`
         INSERT INTO performance_metrics (operation, duration_ms, context, created_at)
-        VALUES (?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4)
       `, [
         operation,
         duration,
