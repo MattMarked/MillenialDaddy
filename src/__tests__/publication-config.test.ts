@@ -80,7 +80,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'Europe/London'
       };
 
-      mockDatabase.query.mockResolvedValue({ rows: [] });
+      mockDatabase.query.mockResolvedValue(createQueryResult([]));
 
       const result = await PublicationConfigManager.updateConfig(validConfig);
 
@@ -98,7 +98,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'Asia/Tokyo'
       };
 
-      mockDatabase.query.mockResolvedValue({ rows: [] });
+      mockDatabase.query.mockResolvedValue(createQueryResult([]));
 
       const result = await PublicationConfigManager.updateConfig(validConfig);
 
@@ -113,7 +113,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({ rows: [] });
+      mockDatabase.query.mockResolvedValue(createQueryResult([]));
 
       const result = await PublicationConfigManager.updateConfig(validConfig);
 
@@ -197,9 +197,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       // Current time is 10:00, next publication should be 14:00 today
       const nextTime = await PublicationConfigManager.getNextPublicationTime();
@@ -216,9 +214,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       // Current time is 10:00, next publication should be 08:00 tomorrow
       const nextTime = await PublicationConfigManager.getNextPublicationTime();
@@ -235,9 +231,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       // Current time is 10:00, next publication should be 12:00 today
       const nextTime = await PublicationConfigManager.getNextPublicationTime();
@@ -255,9 +249,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       // Current time is 10:00, next publication should be in 2 days at 09:00
       const nextTime = await PublicationConfigManager.getNextPublicationTime();
@@ -276,9 +268,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       const shouldPublish = await PublicationConfigManager.shouldPublishNow();
 
@@ -292,9 +282,7 @@ describe('PublicationConfigManager', () => {
         timezone: 'UTC'
       };
 
-      mockDatabase.query.mockResolvedValue({
-        rows: [{ value: config }]
-      });
+      mockDatabase.query.mockResolvedValue(createQueryResult([{ value: config }]));
 
       const shouldPublish = await PublicationConfigManager.shouldPublishNow();
 
