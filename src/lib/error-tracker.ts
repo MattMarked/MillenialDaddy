@@ -1,6 +1,6 @@
 import { logger } from './logger';
 import { alerting } from './alerting';
-import { getDatabase } from './database';
+import { database } from './database';
 
 export interface ErrorPattern {
   errorType: string;
@@ -52,47 +52,45 @@ class ErrorTracker {
 
   async getErrorAnalysis(timeWindow: number = 24): Promise<ErrorAnalysis> {
     try {
-      const db = await getDatabase();
-      
       // Get error counts by type and source
-      const [errorPatterns] = await db.execute(`
+      const errorPatterns = await database.query(`
         SELECT 
-          JSON_EXTRACT(context, '$.errorType') as error_type,
+          context->>'errorType' as error_type,
           source,
           COUNT(*) as count,
           MIN(created_at) as first_occurrence,
           MAX(created_at) as last_occurrence,
-          COUNT(*) / ? as error_rate
+          COUNT(*) / $1 as error_rate
         FROM system_logs 
         WHERE level IN ('error', 'critical') 
-          AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-          AND JSON_EXTRACT(context, '$.errorType') IS NOT NULL
-        GROUP BY JSON_EXTRACT(context, '$.errorType'), source
+          AND created_at >= NOW() - INTERVAL '${timeWindow} hours'
+          AND context->>'errorType' IS NOT NULL
+        GROUP BY context->>'errorType', source
         ORDER BY count DESC
         LIMIT 20
-      `, [timeWindow, timeWindow]);
+      `, [timeWindow]);
 
       // Get total error count
-      const [totalResult] = await db.execute(`
+      const totalResult = await database.query(`
         SELECT COUNT(*) as total
         FROM system_logs 
         WHERE level IN ('error', 'critical') 
-          AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-      `, [timeWindow]);
+          AND created_at >= NOW() - INTERVAL '${timeWindow} hours'
+      `);
 
       // Get critical error count
-      const [criticalResult] = await db.execute(`
+      const criticalResult = await database.query(`
         SELECT COUNT(*) as critical_count
         FROM system_logs 
         WHERE level = 'critical' 
-          AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-      `, [timeWindow]);
+          AND created_at >= NOW() - INTERVAL '${timeWindow} hours'
+      `);
 
-      const totalErrors = (totalResult as any)[0]?.total || 0;
-      const criticalErrors = (criticalResult as any)[0]?.critical_count || 0;
+      const totalErrors = totalResult.rows[0]?.total || 0;
+      const criticalErrors = criticalResult.rows[0]?.critical_count || 0;
       const errorRate = totalErrors / timeWindow;
 
-      const patterns: ErrorPattern[] = (errorPatterns as any[]).map(row => ({
+      const patterns: ErrorPattern[] = (errorPatterns.rows || []).map(row => ({
         errorType: row.error_type || 'Unknown',
         source: row.source,
         count: row.count,
@@ -135,22 +133,21 @@ class ErrorTracker {
 
   async getErrorsBySource(source: string, limit: number = 50): Promise<any[]> {
     try {
-      const db = await getDatabase();
-      const [errors] = await db.execute(`
+      const errors = await database.query(`
         SELECT 
           level,
           message,
           context,
           created_at
         FROM system_logs 
-        WHERE source = ? 
+        WHERE source = $1 
           AND level IN ('error', 'critical')
-          AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+          AND created_at >= NOW() - INTERVAL '24 hours'
         ORDER BY created_at DESC
-        LIMIT ?
+        LIMIT $2
       `, [source, limit]);
 
-      return errors as any[];
+      return errors.rows || [];
     } catch (error) {
       await logger.logError(
         error instanceof Error ? error : new Error('Unknown error'),
@@ -164,20 +161,19 @@ class ErrorTracker {
 
   async getErrorTrends(hours: number = 24): Promise<any[]> {
     try {
-      const db = await getDatabase();
-      const [trends] = await db.execute(`
+      const trends = await database.query(`
         SELECT 
-          DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') as hour,
+          to_char(date_trunc('hour', created_at), 'YYYY-MM-DD HH24:00:00') as hour,
           level,
           COUNT(*) as count
         FROM system_logs 
         WHERE level IN ('error', 'critical')
-          AND created_at >= DATE_SUB(NOW(), INTERVAL ? HOUR)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00'), level
+          AND created_at >= NOW() - INTERVAL '${hours} hours'
+        GROUP BY date_trunc('hour', created_at), level
         ORDER BY hour DESC
-      `, [hours]);
+      `);
 
-      return trends as any[];
+      return trends.rows || [];
     } catch (error) {
       await logger.logError(
         error instanceof Error ? error : new Error('Unknown error'),
@@ -195,18 +191,16 @@ class ErrorTracker {
     severity: string
   ): Promise<void> {
     try {
-      const db = await getDatabase();
-      
       // Count recent occurrences of this error type from this source
-      const [recentErrors] = await db.execute(`
+      const recentErrors = await database.query(`
         SELECT COUNT(*) as count
         FROM system_logs 
-        WHERE source = ? 
-          AND JSON_EXTRACT(context, '$.errorType') = ?
-          AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        WHERE source = $1 
+          AND context->>'errorType' = $2
+          AND created_at >= NOW() - INTERVAL '1 hour'
       `, [source, error.constructor.name]);
 
-      const recentCount = (recentErrors as any)[0]?.count || 0;
+      const recentCount = recentErrors.rows[0]?.count || 0;
 
       // Alert if error rate is high
       if (recentCount >= this.ERROR_RATE_THRESHOLD) {
@@ -219,15 +213,15 @@ class ErrorTracker {
 
       // Alert for critical errors
       if (severity === 'critical') {
-        const [criticalCount] = await db.execute(`
+        const criticalCount = await database.query(`
           SELECT COUNT(*) as count
           FROM system_logs 
-          WHERE source = ? 
+          WHERE source = $1 
             AND level = 'critical'
-            AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+            AND created_at >= NOW() - INTERVAL '1 hour'
         `, [source]);
 
-        const criticalRecentCount = (criticalCount as any)[0]?.count || 0;
+        const criticalRecentCount = criticalCount.rows[0]?.count || 0;
         
         if (criticalRecentCount >= this.CRITICAL_ERROR_THRESHOLD) {
           await alerting.createAlert(

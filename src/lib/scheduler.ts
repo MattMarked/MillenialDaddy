@@ -115,7 +115,7 @@ export class PublicationScheduler {
         const storyResult = await instagramAPI.postToStory(instagramPost);
         console.log(`Successfully posted to story: ${storyResult.id}`);
       } catch (storyError) {
-        console.warn(`Story post failed: ${storyError.message}`);
+        console.warn(`Story post failed: ${storyError instanceof Error ? storyError.message : String(storyError)}`);
         // Don't fail the entire publication if only story fails
       }
 

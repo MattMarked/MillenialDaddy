@@ -13,8 +13,7 @@ interface HealthCheckResult {
 async function checkDatabase(): Promise<HealthCheckResult> {
   const start = Date.now();
   try {
-    const db = await getDatabase();
-    await db.execute('SELECT 1');
+    await database.query('SELECT 1');
     return {
       service: 'database',
       status: 'healthy',
@@ -85,10 +84,9 @@ async function checkInstagramAPI(): Promise<HealthCheckResult> {
 
 async function persistHealthCheck(result: HealthCheckResult): Promise<void> {
   try {
-    const db = await getDatabase();
-    await db.execute(`
+    await database.query(`
       INSERT INTO health_checks (service, status, response_time_ms, error_message, checked_at)
-      VALUES (?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5)
     `, [
       result.service,
       result.status,

@@ -8,18 +8,16 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const db = await getDatabase();
-
     // Build query based on log level filter
     let whereClause = '';
     const params: any[] = [];
 
     if (level !== 'all') {
-      whereClause = 'WHERE level = ?';
+      whereClause = 'WHERE level = $1';
       params.push(level);
     }
 
-    const [logs] = await db.execute(`
+    const logs = await database.query(`
       SELECT 
         id,
         level,
@@ -29,20 +27,20 @@ export async function GET(request: NextRequest) {
       FROM system_logs
       ${whereClause}
       ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `, [...params, limit, offset]);
 
     // Get total count for pagination
-    const [countResult] = await db.execute(`
+    const countResult = await database.query(`
       SELECT COUNT(*) as total
       FROM system_logs
       ${whereClause}
     `, params);
 
-    const total = countResult[0]?.total || 0;
+    const total = countResult.rows[0]?.total || 0;
 
     return NextResponse.json({
-      logs: logs || [],
+      logs: logs.rows || [],
       pagination: {
         total,
         limit,

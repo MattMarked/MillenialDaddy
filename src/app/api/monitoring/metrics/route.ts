@@ -7,25 +7,23 @@ export async function GET(request: NextRequest) {
     const timeRange = searchParams.get('range') || '24h';
     const operation = searchParams.get('operation');
 
-    const db = await getDatabase();
-
     // Calculate time range
     let timeClause = '';
     switch (timeRange) {
       case '1h':
-        timeClause = 'WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)';
+        timeClause = "WHERE created_at >= NOW() - INTERVAL '1 hour'";
         break;
       case '24h':
-        timeClause = 'WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)';
+        timeClause = "WHERE created_at >= NOW() - INTERVAL '24 hours'";
         break;
       case '7d':
-        timeClause = 'WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)';
+        timeClause = "WHERE created_at >= NOW() - INTERVAL '7 days'";
         break;
       case '30d':
-        timeClause = 'WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)';
+        timeClause = "WHERE created_at >= NOW() - INTERVAL '30 days'";
         break;
       default:
-        timeClause = 'WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)';
+        timeClause = "WHERE created_at >= NOW() - INTERVAL '24 hours'";
     }
 
     // Add operation filter if specified
@@ -35,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get performance metrics
-    const [performanceMetrics] = await db.execute(`
+    const performanceMetrics = await database.query(`
       SELECT 
         operation,
         COUNT(*) as count,
@@ -51,7 +49,7 @@ export async function GET(request: NextRequest) {
     `);
 
     // Get error rates from logs
-    const [errorMetrics] = await db.execute(`
+    const errorMetrics = await database.query(`
       SELECT 
         source,
         level,
@@ -64,12 +62,12 @@ export async function GET(request: NextRequest) {
     `);
 
     // Get queue processing metrics
-    const [queueMetrics] = await db.execute(`
+    const queueMetrics = await database.query(`
       SELECT 
         platform,
         status,
         COUNT(*) as count,
-        AVG(TIMESTAMPDIFF(SECOND, created_at, COALESCE(processed_at, published_at, NOW()))) as avg_processing_time
+        AVG(EXTRACT(EPOCH FROM (COALESCE(processed_at, published_at, NOW()) - created_at))) as avg_processing_time
       FROM queue_items
       ${timeClause.replace('performance_metrics', 'queue_items')}
       GROUP BY platform, status
@@ -77,25 +75,25 @@ export async function GET(request: NextRequest) {
     `);
 
     // Get hourly activity for charts
-    const [hourlyActivity] = await db.execute(`
+    const hourlyActivity = await database.query(`
       SELECT 
-        DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') as hour,
+        to_char(date_trunc('hour', created_at), 'YYYY-MM-DD HH24:00:00') as hour,
         COUNT(*) as items_processed,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful,
         COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed
       FROM queue_items
       ${timeClause.replace('performance_metrics', 'queue_items')}
-      GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00')
+      GROUP BY date_trunc('hour', created_at)
       ORDER BY hour DESC
       LIMIT 24
     `);
 
     const metrics = {
       timeRange,
-      performance: performanceMetrics || [],
-      errors: errorMetrics || [],
-      queues: queueMetrics || [],
-      activity: hourlyActivity || [],
+      performance: performanceMetrics.rows || [],
+      errors: errorMetrics.rows || [],
+      queues: queueMetrics.rows || [],
+      activity: hourlyActivity.rows || [],
       timestamp: new Date().toISOString()
     };
 
@@ -123,10 +121,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    await db.execute(`
+    await database.query(`
       INSERT INTO performance_metrics (operation, duration_ms, context, created_at)
-      VALUES (?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4)
     `, [
       operation,
       duration,

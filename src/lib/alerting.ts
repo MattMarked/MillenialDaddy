@@ -1,5 +1,5 @@
 import { logger } from './logger';
-import { getDatabase } from './database';
+import { database } from './database';
 
 export interface Alert {
   id: string;
@@ -54,10 +54,9 @@ class AlertingSystem {
 
     try {
       // Persist alert to database
-      const db = await getDatabase();
-      await db.execute(`
+      await database.query(`
         INSERT INTO alerts (id, type, title, message, source, context, created_at, acknowledged)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
         alert.id,
         alert.type,
@@ -96,14 +95,14 @@ class AlertingSystem {
 
   async acknowledgeAlert(alertId: string, acknowledgedBy: string): Promise<boolean> {
     try {
-      const db = await getDatabase();
-      const result = await db.execute(`
+      // Use database directly
+      const result = await database.query(`
         UPDATE alerts 
-        SET acknowledged = true, acknowledged_at = ?, acknowledged_by = ?
-        WHERE id = ? AND acknowledged = false
+        SET acknowledged = true, acknowledged_at = $1, acknowledged_by = $2
+        WHERE id = $3 AND acknowledged = false
       `, [new Date(), acknowledgedBy, alertId]);
 
-      const success = (result as any).affectedRows > 0;
+      const success = result.rowCount > 0;
       
       if (success) {
         await logger.info('Alert acknowledged', {
@@ -126,15 +125,15 @@ class AlertingSystem {
 
   async getActiveAlerts(limit: number = 50): Promise<Alert[]> {
     try {
-      const db = await getDatabase();
-      const [alerts] = await db.execute(`
+      // Use database directly
+      const alerts = await database.query(`
         SELECT * FROM alerts 
         WHERE acknowledged = false 
         ORDER BY created_at DESC 
-        LIMIT ?
+        LIMIT $1
       `, [limit]);
 
-      return (alerts as any[]).map(this.mapDbAlertToAlert);
+      return (alerts.rows || []).map(this.mapDbAlertToAlert);
     } catch (error) {
       await logger.logError(
         error instanceof Error ? error : new Error('Unknown error'),
@@ -148,14 +147,14 @@ class AlertingSystem {
 
   async getAlertHistory(limit: number = 100): Promise<Alert[]> {
     try {
-      const db = await getDatabase();
-      const [alerts] = await db.execute(`
+      // Use database directly
+      const alerts = await database.query(`
         SELECT * FROM alerts 
         ORDER BY created_at DESC 
-        LIMIT ?
+        LIMIT $1
       `, [limit]);
 
-      return (alerts as any[]).map(this.mapDbAlertToAlert);
+      return (alerts.rows || []).map(this.mapDbAlertToAlert);
     } catch (error) {
       await logger.logError(
         error instanceof Error ? error : new Error('Unknown error'),

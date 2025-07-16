@@ -270,7 +270,7 @@ export class InstagramFormatter {
 
     return {
       text: formattedText,
-      mentions: [...new Set(mentions)], // Remove duplicates
+      mentions: Array.from(new Set(mentions)), // Remove duplicates
     };
   }
 
@@ -290,7 +290,7 @@ export class InstagramFormatter {
     const combined = [...contentHashtags, ...trending];
     
     // Remove duplicates and limit to 30
-    const unique = [...new Set(combined)];
+    const unique = Array.from(new Set(combined));
     return unique.slice(0, 30);
   }
 }

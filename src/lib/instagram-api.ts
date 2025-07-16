@@ -84,7 +84,7 @@ export class InstagramAPI {
       if (error instanceof InstagramAPIError) {
         throw error;
       }
-      throw new InstagramAPIError(`Token validation error: ${error.message}`);
+      throw new InstagramAPIError(`Token validation error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -140,7 +140,7 @@ export class InstagramAPI {
       if (error instanceof InstagramAPIError) {
         throw error;
       }
-      throw new InstagramAPIError(`Media container creation error: ${error.message}`);
+      throw new InstagramAPIError(`Media container creation error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -184,7 +184,7 @@ export class InstagramAPI {
       if (error instanceof InstagramAPIError) {
         throw error;
       }
-      throw new InstagramAPIError(`Media publishing error: ${error.message}`);
+      throw new InstagramAPIError(`Media publishing error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -296,7 +296,7 @@ export class InstagramAPI {
       if (error instanceof InstagramAPIError) {
         throw error;
       }
-      throw new InstagramAPIError(`Account info error: ${error.message}`);
+      throw new InstagramAPIError(`Account info error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -358,13 +358,13 @@ export class InstagramAPI {
     maxRetries: number = 3,
     operationName: string = 'Instagram API operation'
   ): Promise<T> {
-    let lastError: Error;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
+        lastError = error instanceof Error ? error : new Error(String(error));
         
         if (error instanceof InstagramAPIError) {
           // Don't retry on authentication errors
@@ -381,7 +381,7 @@ export class InstagramAPI {
           }
           
           // Retry on server errors
-          if (error.statusCode >= 500 && attempt < maxRetries) {
+          if (error.statusCode && error.statusCode >= 500 && attempt < maxRetries) {
             await this.waitForRateLimit(attempt);
             continue;
           }
