@@ -1,10 +1,10 @@
-# MillenialDaddy Product Context
+# Millennial Daddy Product Context
 
 ## Problem Statement
 Managing content for an Instagram account is time-consuming and labor-intensive. Content curation, description writing, and maintaining a consistent posting schedule require significant manual effort, especially when working with a team of content contributors.
 
 ## Solution
-MillenialDaddy automates the Instagram content pipeline by:
+Millennial Daddy automates the Instagram content pipeline by:
 1. Providing a simple DM-based submission system for admins
 2. Automatically processing and queuing submitted reels
 3. Generating engaging descriptions using AI
@@ -35,7 +35,7 @@ MillenialDaddy automates the Instagram content pipeline by:
 
 ## User Journey
 1. Admin discovers interesting reel on Instagram
-2. Admin shares reel via DM to MillenialDaddy account
+2. Admin shares reel via DM to Millennial Daddy account
 3. System validates admin permissions
 4. System processes reel and adds to content queue
 5. AI generates engaging description

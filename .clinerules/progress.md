@@ -1,4 +1,4 @@
-# MillenialDaddy Progress
+# Millennial Daddy Progress
 
 ## Project Status: Initialization
 

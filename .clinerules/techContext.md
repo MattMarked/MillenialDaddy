@@ -1,4 +1,4 @@
-# MillenialDaddy Technical Context
+# Millennial Daddy Technical Context
 
 ## Technology Stack
 
@@ -34,7 +34,7 @@
 ### Vercel Free Tier Limitations
 - Limited serverless function execution time
 - Limited KV storage capacity
-- Limited cron job frequency
+- Daily cron job execution (12:00 PM UTC)
 
 ### Instagram API Constraints
 - Rate limits for posting content
@@ -61,7 +61,6 @@
 ## Configuration Management
 
 ### Environment Variables
-- `POSTING_INTERVAL_MINUTES`: Configurable posting schedule
 - `ADMIN_USERNAMES`: Comma-separated list of authorized Instagram usernames
 - `INSTAGRAM_ACCESS_TOKEN`: Authentication token for Instagram API
 - `OPENAI_API_KEY`: Authentication key for OpenAI API
@@ -69,6 +68,11 @@
 ### Feature Flags
 - `ENABLE_AUTO_POSTING`: Toggle for automatic posting feature
 - `ENABLE_AI_DESCRIPTIONS`: Toggle for AI description generation
+
+### Scheduling
+- Configured in `vercel.json`
+- Daily execution at 12:00 PM UTC
+- Optimized for free tier limitations
 
 ## Monitoring & Maintenance
 

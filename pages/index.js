@@ -5,8 +5,7 @@ export default function Home() {
   const [stats, setStats] = useState(null);
   const [config, setConfig] = useState({
     postingEnabled: process.env.ENABLE_AUTO_POSTING === 'true',
-    aiEnabled: process.env.ENABLE_AI_DESCRIPTIONS === 'true',
-    postingInterval: process.env.POSTING_INTERVAL_MINUTES || '30'
+    aiEnabled: process.env.ENABLE_AI_DESCRIPTIONS === 'true'
   });
 
   useEffect(() => {
@@ -22,13 +21,13 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>MillenialDaddy - Instagram Automation</title>
+        <title>Millennial Daddy - Instagram Automation</title>
         <meta name="description" content="Instagram content automation system" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <h1>MillenialDaddy</h1>
+        <h1>Millennial Daddy</h1>
         <p>Instagram content automation system</p>
 
         <div className="status">
@@ -45,7 +44,7 @@ export default function Home() {
               </span>
             </li>
             <li>
-              Posting Interval: <span className="info">Every {config.postingInterval} minutes</span>
+              Posting Schedule: <span className="info">Daily at 12:00 PM UTC</span>
             </li>
           </ul>
         </div>

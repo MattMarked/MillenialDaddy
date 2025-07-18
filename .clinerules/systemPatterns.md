@@ -1,4 +1,4 @@
-# MillenialDaddy System Patterns
+# Millennial Daddy System Patterns
 
 ## System Architecture
 

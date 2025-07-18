@@ -1,5 +1,5 @@
 /**
- * Scheduled content posting endpoint for MillenialDaddy
+ * Scheduled content posting endpoint for Millennial Daddy
  * 
  * This endpoint is triggered by Vercel Cron every 30 minutes to:
  * 1. Check the content queue for pending items

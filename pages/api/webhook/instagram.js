@@ -1,5 +1,5 @@
 /**
- * Instagram webhook endpoint for MillenialDaddy
+ * Instagram webhook endpoint for Millennial Daddy
  * 
  * This endpoint handles:
  * 1. Webhook verification from Instagram

@@ -1,10 +1,10 @@
-# MillenialDaddy Project Brief
+# Millennial Daddy Project Brief
 
 ## Project Overview
-MillenialDaddy is an Instagram automation tool designed to simplify content curation and reposting. It enables a small team of admins to share reels via DM, which are then automatically processed, enhanced with AI-generated descriptions, and reposted to the main MillenialDaddy Instagram account on a configurable schedule.
+Millennial Daddy is an Instagram automation tool designed to simplify content curation and reposting. It enables a small team of admins to share reels via DM, which are then automatically processed, enhanced with AI-generated descriptions, and reposted to the main Millennial Daddy Instagram account on a configurable schedule.
 
 ## Core Functionality
-- **DM Collection**: Admins send reels to the MillenialDaddy Instagram account via direct messages
+- **DM Collection**: Admins send reels to the Millennial Daddy Instagram account via direct messages
 - **Content Queue**: Received reels are stored in a processing queue
 - **AI Description**: OpenAI API generates engaging descriptions for each reel
 - **Scheduled Posting**: Content is automatically posted at configurable intervals

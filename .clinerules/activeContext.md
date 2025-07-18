@@ -1,4 +1,4 @@
-# MillenialDaddy Active Context
+# Millennial Daddy Active Context
 
 ## Current Focus
 - Project initialization and memory bank setup
@@ -9,6 +9,7 @@
 - Created memory bank structure
 - Defined project requirements and constraints
 - Established system architecture patterns
+- Updated to daily posting schedule at 12:00 PM UTC
 
 ## Next Steps
 - Set up Next.js project structure
@@ -31,9 +32,10 @@
 - OpenAI API integration for description generation
 
 ### Posting Strategy
-- Configurable posting interval via environment variables
+- Daily posting at 12:00 PM UTC via Vercel cron
 - FIFO queue for content processing
 - No content filtering in initial version
+- Optimized for Vercel free tier limits
 
 ## Current Challenges
 - Verifying Instagram API permissions and webhook setup
