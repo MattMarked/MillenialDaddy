@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "crons": [
+    {
+      "path": "/api/cron/post-content",
+      "schedule": "*/30 * * * *"
+    }
+  ],
+  "env": {
+    "ADMIN_USERNAMES": "matt_at_sunset",
+    "POSTING_INTERVAL_MINUTES": "30"
+  },
+  "buildCommand": "next build"
+}
